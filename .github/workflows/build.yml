@@ -1,0 +1,32 @@
+name: Build NeonCalc APK
+
+on:
+workflow_dispatch:
+push:
+branches:
+- main
+
+permissions:
+contents: read
+
+jobs:
+build:
+runs-on: ubuntu-latest
+
+steps:
+  - name: Checkout source
+    uses: actions/checkout@v4
+
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
+
+  - name: Set up Android SDK
+    uses: android-actions/setup-android@v3
+
+  - name: Build NeonCalc APK
+    run: |
+      echo "Android project configuration will be added next."
+      echo "This workflow is a placeholder and does not build an APK yet."

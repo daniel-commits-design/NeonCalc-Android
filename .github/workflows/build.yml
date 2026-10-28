@@ -10,8 +10,8 @@ permissions:
 contents: read
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
 steps:
   - name: Checkout source

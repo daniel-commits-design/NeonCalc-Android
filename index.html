@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080b14">
+    <title>NeonCalc</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="calculator">
+
+        <header class="top-bar">
+            <div class="brand">
+                <span class="brand-icon">✳</span>
+                <span>NEON<span class="accent">CALC</span></span>
+            </div>
+            <span class="status">● ONLINE</span>
+        </header>
+
+        <section class="display">
+            <div class="display-label">CALCULATION OUTPUT</div>
+            <div id="expression" class="expression"></div>
+            <div id="result" class="result">0</div>
+        </section>
+
+        <section class="keypad">
+            <button class="key function" data-action="clear">AC</button>
+            <button class="key function" data-action="delete">⌫</button>
+            <button class="key operator" data-value="%">%</button>
+            <button class="key operator" data-value="/">÷</button>
+
+            <button class="key" data-value="7">7</button>
+            <button class="key" data-value="8">8</button>
+            <button class="key" data-value="9">9</button>
+            <button class="key operator" data-value="*">×</button>
+
+            <button class="key" data-value="4">4</button>
+            <button class="key" data-value="5">5</button>
+            <button class="key" data-value="6">6</button>
+            <button class="key operator" data-value="-">−</button>
+
+            <button class="key" data-value="1">1</button>
+            <button class="key" data-value="2">2</button>
+            <button class="key" data-value="3">3</button>
+            <button class="key operator" data-value="+">+</button>
+
+            <button class="key function" data-action="sign">+/−</button>
+            <button class="key" data-value="0">0</button>
+            <button class="key" data-value=".">.</button>
+            <button class="key equals" data-action="calculate">=</button>
+        </section>
+
+        <footer class="footer">
+            <span>PRECISION ENGINE</span>
+            <span>NEONCALC <span class="accent">v1.0</span></span>
+        </footer>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

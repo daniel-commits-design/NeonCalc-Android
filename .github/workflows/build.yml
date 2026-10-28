@@ -23,10 +23,159 @@ steps:
       distribution: temurin
       java-version: '17'
 
+  - name: Set up Gradle
+    uses: gradle/actions/setup-gradle@v4
+    with:
+      gradle-version: '8.9'
+
   - name: Set up Android SDK
     uses: android-actions/setup-android@v3
 
-  - name: Build NeonCalc APK
+  - name: Install Android SDK components
+    run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+  - name: Generate Android project
+    shell: bash
     run: |
-      echo "Android project configuration will be added next."
-      echo "This workflow is a placeholder and does not build an APK yet."
+      mkdir -p app/src/main/assets
+      mkdir -p app/src/main/java/com/neoncalc/app
+
+      sed '1s/<DOCTYPE html>/<!DOCTYPE html>/; s/<head>!/<head>/' index.html > app/src/main/assets/index.html
+      cp style.css app/src/main/assets/style.css
+      cp script.js app/src/main/assets/script.js
+
+      cat > settings.gradle <<'EOF'
+      pluginManagement {
+          repositories {
+              google()
+              mavenCentral()
+              gradlePluginPortal()
+          }
+      }
+      dependencyResolutionManagement {
+          repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+          repositories {
+              google()
+              mavenCentral()
+          }
+      }
+      rootProject.name = "NeonCalc"
+      include(":app")
+      EOF
+
+      cat > build.gradle <<'EOF'
+      plugins {
+          id 'com.android.application' version '8.7.3' apply false
+      }
+      EOF
+
+      cat > gradle.properties <<'EOF'
+      org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+      android.useAndroidX=true
+      EOF
+
+      cat > app/build.gradle <<'EOF'
+      plugins {
+          id 'com.android.application'
+      }
+
+      android {
+          namespace 'com.neoncalc.app'
+          compileSdk 35
+
+          defaultConfig {
+              applicationId 'com.neoncalc.app'
+              minSdk 23
+              targetSdk 28
+              versionCode 1
+              versionName '1.0'
+          }
+      }
+      EOF
+
+      cat > app/src/main/AndroidManifest.xml <<'EOF'
+      <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+          <application
+              android:theme="@android:style/Theme.Material.Light.NoActionBar"
+              android:label="NeonCalc"
+              android:usesCleartextTraffic="false"
+              android:hardwareAccelerated="true">
+              <activity
+                  android:name=".MainActivity"
+                  android:exported="true"
+                  android:screenOrientation="portrait">
+                  <intent-filter>
+                      <action android:name="android.intent.action.MAIN" />
+                      <category android:name="android.intent.category.LAUNCHER" />
+                  </intent-filter>
+              </activity>
+          </application>
+      </manifest>
+      EOF
+
+      cat > app/src/main/java/com/neoncalc/app/MainActivity.java <<'EOF'
+      package com.neoncalc.app;
+
+      import android.app.Activity;
+      import android.os.Bundle;
+      import android.webkit.WebView;
+      import android.webkit.WebViewClient;
+      import android.graphics.Color;
+      import android.view.View;
+      import android.view.Window;
+      import android.view.WindowManager;
+
+      public class MainActivity extends Activity {
+          private WebView webView;
+
+          @Override
+          protected void onCreate(Bundle savedInstanceState) {
+              super.onCreate(savedInstanceState);
+
+              Window window = getWindow();
+              window.setStatusBarColor(Color.rgb(7, 9, 16));
+              window.setNavigationBarColor(Color.rgb(7, 9, 16));
+              window.setFlags(
+                  WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+                  WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+              );
+
+              webView = new WebView(this);
+              webView.setBackgroundColor(Color.rgb(7, 9, 16));
+              webView.setWebViewClient(new WebViewClient());
+              webView.getSettings().setJavaScriptEnabled(true);
+              webView.getSettings().setDomStorageEnabled(true);
+              webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
+              setContentView(webView);
+              webView.loadUrl("file:///android_asset/index.html");
+          }
+
+          @Override
+          public void onBackPressed() {
+              if (webView != null && webView.canGoBack()) {
+                  webView.goBack();
+              } else {
+                  super.onBackPressed();
+              }
+          }
+
+          @Override
+          protected void onDestroy() {
+              if (webView != null) {
+                  webView.destroy();
+              }
+              super.onDestroy();
+          }
+      }
+      EOF
+
+  - name: Build debug APK
+    run: gradle assembleDebug
+
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: NeonCalc-APK
+      path: app/build/outputs/apk/debug/app-debug.apk
+      if-no-files-found: error
